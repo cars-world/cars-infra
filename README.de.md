@@ -35,7 +35,7 @@ Bicep-Komponente je Ressource, darunter der Kubernetes-Cluster.
 | `bicep`                  | Ein Ordner je Komponente: `main.bicep` und `<component>.bicepparam`            |
 
 Alle Ressourcen liegen in einer Ressourcengruppe `rg-cars` in Germany
-West Central und dienen den Stufen `dev`, `stage` und `prod` gemeinsam:
+West Central und dienen den Stufen `dev`, `test` und `prod` gemeinsam:
 ein Kubernetes-Cluster `aks-cars`, eine Registry, ein Netz, ein
 Log-Analytics-Arbeitsbereich und eine DNS-Zone, dazu eine Logic App, die
 den Cluster jeden Abend stoppt. Was die Stufen und die
@@ -103,6 +103,11 @@ bekommt das Tag `techresponsibility` mit dem angemeldeten Benutzer. Die
 Komponente `aks` gibt den Gruppen `cars-admins` und `cars-operators`
 Admin-Rechte im Cluster; `deploy.js` sucht ihre Objekt-IDs über den Namen.
 
+`dns` wird nur für eine eigene Domain gebraucht; bis dahin nutzen die
+Apps die kostenlosen Azure-Namen
+`cars-<stage>.germanywestcentral.cloudapp.azure.com` ihrer Gateways, die
+nicht zu diesem Repo gehören. `dns` kommt in `deploy.js all` zuletzt,
+schlägt also erst fehl, wenn alle anderen Komponenten ausgerollt sind.
 Bevor `dns` ausgerollt werden kann, muss `bicep/dns/dns.bicepparam` die
 Zone nennen. Nach dem Ausrollen die Namensserver aus ihrer Ausgabe als
 NS-Einträge in die übergeordnete Domain eintragen.
@@ -138,8 +143,8 @@ node test.js
   Apps
 - Der Cluster stoppt jeden Abend um 20:00 und läuft erst nach einem
   `az aks start` von Hand wieder, bis dahin sind die Apps aller Stufen,
-  auch prod, offline. Tag und Nacht laufend kostet ein Knoten je Pool zu
-  Listenpreisen etwa 90 bis 200 USD im Monat; gestoppt kosten nur die
+  auch prod, offline. Tag und Nacht laufend kosten vier Knoten, zwei davon
+  im Pool `system`, zu Listenpreisen etwa 120 bis 270 USD im Monat; gestoppt kosten nur die
   Datenträger, die öffentliche IP und der Load Balancer, etwa 20 USD im
   Monat. Die Steuerungsebene ist im Free-Tarif, ohne
   Verfügbarkeitszusage
@@ -151,8 +156,9 @@ node test.js
 | `log-analytics`      | `log-cars`                                                        | ja         |
 | `container-registry` | `crcars`                                                          | ja         |
 | `network`            | `vnet-cars`, `snet-cars-<pool>`, `nsg-cars-<pool>`                | ja         |
-| `dns`                | die Zone `cars.<domain>`                                          | nein       |
 | `aks`                | `aks-cars`, `id-aks-cars`, Knoten-Ressourcengruppe `rg-cars-aks`  | ja         |
 | `aks-schedule`       | `logic-aks-cars-stop`                                             | ja         |
+| `dns`                | die Zone `cars.<domain>`                                          | nein       |
 
-`dns` wartet auf den Namen der Domain.
+`dns` wird nicht gebraucht, solange die kostenlosen Azure-Namen genutzt
+werden.

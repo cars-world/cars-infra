@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- The pool `system` of `aks` gets two nodes: the managed Istio of the
+  application routing add-on requests 1 vCPU on its own
+- Name the stages `dev`, `test` and `prod` in the README
 - Deploy every component once into one resource group `rg-cars` instead
   of one per stage: `bootstrap.js` and `deploy.js` take no stage, each
   component has one parameter file `<component>.bicepparam`, and the
@@ -17,7 +20,7 @@
   Contributor Role on this cluster only; `bootstrap.js` registers
   `Microsoft.Logic`
 - Add the component `dns`: a public DNS zone whose name is set in its
-  parameter file
+  parameter file; it comes last in `deploy.js all`
 - `network` gets a subnet and NSG per node pool, `snet-cars-system`,
   `-origin` and `-custom`, without the delegation to Container Apps
 - Remove the component `environment` and the provider `Microsoft.App`

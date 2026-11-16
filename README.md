@@ -34,7 +34,7 @@ component per resource, among them the Kubernetes cluster.
 | `bicep`                  | One folder per component: `main.bicep` and `<component>.bicepparam`      |
 
 All resources live in one resource group `rg-cars` in Germany West
-Central and serve the stages `dev`, `stage` and `prod` together: one
+Central and serve the stages `dev`, `test` and `prod` together: one
 Kubernetes cluster `aks-cars`, one registry, one network, one Log
 Analytics workspace and one DNS zone, and a Logic App that stops the
 cluster every evening. What separates the stages and the
@@ -102,8 +102,12 @@ gets the tag `techresponsibility` with the signed-in user. The component
 `aks` gives the groups `cars-admins` and `cars-operators` admin rights in
 the cluster; `deploy.js` looks up their object IDs by name.
 
-Before `dns` can be deployed, `bicep/dns/dns.bicepparam` must name the
-zone. After the deploy, add the name servers of its output as NS records
+`dns` is needed only for a domain of its own; until then the apps use
+the free Azure names `cars-<stage>.germanywestcentral.cloudapp.azure.com`
+of their Gateways, which are not part of this repo. `dns` comes last in
+`deploy.js all`, so it fails only after every other component is
+deployed. Before `dns` can be deployed, `bicep/dns/dns.bicepparam` must
+name the zone. After the deploy, add the name servers of its output as NS records
 to the parent domain.
 
 Sign in to the cluster with your Entra account:
@@ -136,8 +140,8 @@ node test.js
 - No databases, storage or workload identities of the apps yet
 - The cluster stops every evening at 20:00 and runs only after a manual
   `az aks start`, so the apps of every stage, prod included, are offline
-  until then. Running day and night, one node per pool costs about 90 to
-  200 USD a month at list prices; stopped, only the disks, the public IP
+  until then. Running day and night, four nodes, two of them in the pool
+  `system`, cost about 120 to 270 USD a month at list prices; stopped, only the disks, the public IP
   and the load balancer cost, about 20 USD a month. The control plane is
   in the Free tier, without an uptime SLA
 
@@ -148,8 +152,8 @@ node test.js
 | `log-analytics`      | `log-cars`                                                        | yes      |
 | `container-registry` | `crcars`                                                          | yes      |
 | `network`            | `vnet-cars`, `snet-cars-<pool>`, `nsg-cars-<pool>`                | yes      |
-| `dns`                | the zone `cars.<domain>`                                          | no       |
 | `aks`                | `aks-cars`, `id-aks-cars`, node resource group `rg-cars-aks`      | yes      |
 | `aks-schedule`       | `logic-aks-cars-stop`                                             | yes      |
+| `dns`                | the zone `cars.<domain>`                                          | no       |
 
-`dns` waits for the name of the domain.
+`dns` is not needed while the free Azure names are used.

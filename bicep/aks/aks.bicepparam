@@ -9,7 +9,7 @@ using 'main.bicep'
 param tier = 'Free'
 param nodeSize = 'Standard_D2s_v6'
 param nodeCounts = {
-  system: 1
+  system: 2
   origin: 1
   custom: 1
 }
