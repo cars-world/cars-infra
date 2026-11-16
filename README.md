@@ -35,9 +35,9 @@ component per resource, among them the Kubernetes cluster.
 
 All resources live in one resource group `rg-cars` in Germany West
 Central and serve the stages `dev`, `test` and `prod` together: one
-Kubernetes cluster `aks-cars`, one registry, one network, one Log
-Analytics workspace and one DNS zone, and a Logic App that stops the
-cluster every evening. What separates the stages and the
+Kubernetes cluster `aks-cars`, one registry, one network and one Log
+Analytics workspace, and a Logic App that stops the cluster every
+evening. What separates the stages and the
 sides inside the cluster, namespaces, quotas and network policies, is not
 part of this repo.
 
@@ -46,7 +46,6 @@ flowchart LR
   subgraph rg["rg-cars"]
     log["log-cars"]
     cr["crcars"]
-    dns["DNS zone cars.&lt;domain&gt;"]
     subgraph vnet["vnet-cars"]
       sys["snet-cars-system"]
       ori["snet-cars-origin"]
@@ -102,13 +101,9 @@ gets the tag `techresponsibility` with the signed-in user. The component
 `aks` gives the groups `cars-admins` and `cars-operators` admin rights in
 the cluster; `deploy.js` looks up their object IDs by name.
 
-`dns` is needed only for a domain of its own; until then the apps use
-the free Azure names `cars-<stage>.germanywestcentral.cloudapp.azure.com`
-of their Gateways, which are not part of this repo. `dns` comes last in
-`deploy.js all`, so it fails only after every other component is
-deployed. Before `dns` can be deployed, `bicep/dns/dns.bicepparam` must
-name the zone. After the deploy, add the name servers of its output as NS records
-to the parent domain.
+There is no DNS zone: the apps use the free Azure names under
+`germanywestcentral.cloudapp.azure.com`, carried by the public IPs of
+their Gateways, which are not part of this repo.
 
 Sign in to the cluster with your Entra account:
 
@@ -154,6 +149,3 @@ node test.js
 | `network`            | `vnet-cars`, `snet-cars-<pool>`, `nsg-cars-<pool>`                | yes      |
 | `aks`                | `aks-cars`, `id-aks-cars`, node resource group `rg-cars-aks`      | yes      |
 | `aks-schedule`       | `logic-aks-cars-stop`                                             | yes      |
-| `dns`                | the zone `cars.<domain>`                                          | no       |
-
-`dns` is not needed while the free Azure names are used.

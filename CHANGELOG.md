@@ -19,8 +19,6 @@
   stops `aks-cars` every day at 20:00 with the Azure Kubernetes Service
   Contributor Role on this cluster only; `bootstrap.js` registers
   `Microsoft.Logic`
-- Add the component `dns`: a public DNS zone whose name is set in its
-  parameter file; it comes last in `deploy.js all`
 - `network` gets a subnet and NSG per node pool, `snet-cars-system`,
   `-origin` and `-custom`, without the delegation to Container Apps
 - Remove the component `environment` and the provider `Microsoft.App`

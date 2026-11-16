@@ -36,9 +36,9 @@ Bicep-Komponente je Ressource, darunter der Kubernetes-Cluster.
 
 Alle Ressourcen liegen in einer Ressourcengruppe `rg-cars` in Germany
 West Central und dienen den Stufen `dev`, `test` und `prod` gemeinsam:
-ein Kubernetes-Cluster `aks-cars`, eine Registry, ein Netz, ein
-Log-Analytics-Arbeitsbereich und eine DNS-Zone, dazu eine Logic App, die
-den Cluster jeden Abend stoppt. Was die Stufen und die
+ein Kubernetes-Cluster `aks-cars`, eine Registry, ein Netz und ein
+Log-Analytics-Arbeitsbereich, dazu eine Logic App, die den Cluster jeden
+Abend stoppt. Was die Stufen und die
 Seiten im Cluster trennt, Namespaces, Quoten und Netzwerkrichtlinien,
 gehört nicht zu diesem Repo.
 
@@ -47,7 +47,6 @@ flowchart LR
   subgraph rg["rg-cars"]
     log["log-cars"]
     cr["crcars"]
-    dns["DNS-Zone cars.&lt;domain&gt;"]
     subgraph vnet["vnet-cars"]
       sys["snet-cars-system"]
       ori["snet-cars-origin"]
@@ -103,14 +102,9 @@ bekommt das Tag `techresponsibility` mit dem angemeldeten Benutzer. Die
 Komponente `aks` gibt den Gruppen `cars-admins` und `cars-operators`
 Admin-Rechte im Cluster; `deploy.js` sucht ihre Objekt-IDs über den Namen.
 
-`dns` wird nur für eine eigene Domain gebraucht; bis dahin nutzen die
-Apps die kostenlosen Azure-Namen
-`cars-<stage>.germanywestcentral.cloudapp.azure.com` ihrer Gateways, die
-nicht zu diesem Repo gehören. `dns` kommt in `deploy.js all` zuletzt,
-schlägt also erst fehl, wenn alle anderen Komponenten ausgerollt sind.
-Bevor `dns` ausgerollt werden kann, muss `bicep/dns/dns.bicepparam` die
-Zone nennen. Nach dem Ausrollen die Namensserver aus ihrer Ausgabe als
-NS-Einträge in die übergeordnete Domain eintragen.
+Es gibt keine DNS-Zone: die Apps nutzen die kostenlosen Azure-Namen
+unter `germanywestcentral.cloudapp.azure.com`, getragen von den
+öffentlichen IPs ihrer Gateways, die nicht zu diesem Repo gehören.
 
 Mit dem Entra-Konto am Cluster anmelden:
 
@@ -158,7 +152,3 @@ node test.js
 | `network`            | `vnet-cars`, `snet-cars-<pool>`, `nsg-cars-<pool>`                | ja         |
 | `aks`                | `aks-cars`, `id-aks-cars`, Knoten-Ressourcengruppe `rg-cars-aks`  | ja         |
 | `aks-schedule`       | `logic-aks-cars-stop`                                             | ja         |
-| `dns`                | die Zone `cars.<domain>`                                          | nein       |
-
-`dns` wird nicht gebraucht, solange die kostenlosen Azure-Namen genutzt
-werden.
