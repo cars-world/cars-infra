@@ -143,8 +143,8 @@ node test.js
   Apps
 - Der Cluster stoppt jeden Abend um 20:00 und läuft erst nach einem
   `az aks start` von Hand wieder, bis dahin sind die Apps aller Stufen,
-  auch prod, offline. Tag und Nacht laufend kostet ein Knoten je Pool zu
-  Listenpreisen etwa 90 bis 200 USD im Monat; gestoppt kosten nur die
+  auch prod, offline. Tag und Nacht laufend kosten vier Knoten, zwei davon
+  im Pool `system`, zu Listenpreisen etwa 120 bis 270 USD im Monat; gestoppt kosten nur die
   Datenträger, die öffentliche IP und der Load Balancer, etwa 20 USD im
   Monat. Die Steuerungsebene ist im Free-Tarif, ohne
   Verfügbarkeitszusage

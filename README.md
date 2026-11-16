@@ -140,8 +140,8 @@ node test.js
 - No databases, storage or workload identities of the apps yet
 - The cluster stops every evening at 20:00 and runs only after a manual
   `az aks start`, so the apps of every stage, prod included, are offline
-  until then. Running day and night, one node per pool costs about 90 to
-  200 USD a month at list prices; stopped, only the disks, the public IP
+  until then. Running day and night, four nodes, two of them in the pool
+  `system`, cost about 120 to 270 USD a month at list prices; stopped, only the disks, the public IP
   and the load balancer cost, about 20 USD a month. The control plane is
   in the Free tier, without an uptime SLA
 

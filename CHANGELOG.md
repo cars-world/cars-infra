@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- The pool `system` of `aks` gets two nodes: the managed Istio of the
+  application routing add-on requests 1 vCPU on its own
 - Name the stages `dev`, `test` and `prod` in the README
 - Deploy every component once into one resource group `rg-cars` instead
   of one per stage: `bootstrap.js` and `deploy.js` take no stage, each
