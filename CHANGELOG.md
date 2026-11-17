@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Add the component `github`: identities for GitHub Actions with
+  federated credentials, `id-cars-github-build` with AcrPush on `crcars`
+  and read access to the Key Vault `kv-cars-github`, and
+  `id-cars-github-scan` with AcrPull; `bootstrap.js` registers
+  `Microsoft.KeyVault`
 - The pool `system` of `aks` gets two nodes: the managed Istio of the
   application routing add-on requests 1 vCPU on its own
 - Name the stages `dev`, `test` and `prod` in the README

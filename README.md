@@ -120,6 +120,19 @@ minutes:
 az aks start --resource-group rg-cars --name aks-cars
 ```
 
+The component `github` lets GitHub Actions sign in to Azure through
+OpenID Connect, without a stored secret: `id-cars-github-build` for the
+workflows on `main` of the repos in `buildRepos`, which push images to
+`crcars` and read the Key Vault `kv-cars-github`, and
+`id-cars-github-scan` for the pull requests of the repos in `scanRepos`,
+which only pull. The groups `cars-admins` and `cars-operators` may write
+secrets into the Key Vault, e.g. the private key of a GitHub App:
+
+```bash
+az keyvault secret set --vault-name kv-cars-github \
+  --name <secret> --file <path-to-key>
+```
+
 ## Test
 
 Before each commit:
@@ -149,3 +162,4 @@ node test.js
 | `network`            | `vnet-cars`, `snet-cars-<pool>`, `nsg-cars-<pool>`                | yes      |
 | `aks`                | `aks-cars`, `id-aks-cars`, node resource group `rg-cars-aks`      | yes      |
 | `aks-schedule`       | `logic-aks-cars-stop`                                             | yes      |
+| `github`             | `id-cars-github-build`, `id-cars-github-scan`, `kv-cars-github`   | no       |
