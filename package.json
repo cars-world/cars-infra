@@ -1,5 +1,5 @@
 {
-  "name": "@rljson/cars-infra",
+  "name": "@cars-world/cars-infra",
   "version": "0.0.1",
   "description": "Azure resources of the cars application: Bicep components, a bootstrap script and a deploy script",
   "private": true,
@@ -7,6 +7,6 @@
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rljson/cars-infra.git"
+    "url": "git+https://github.com/cars-world/cars-infra.git"
   }
 }
