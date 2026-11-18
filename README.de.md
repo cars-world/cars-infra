@@ -126,8 +126,13 @@ Azure anmelden, ohne gespeichertes Secret: `id-cars-github-build` für die
 Workflows auf `main` der Repos in `buildRepos`, die Images nach `crcars`
 pushen und den Key Vault `kv-cars-github` lesen, und
 `id-cars-github-scan` für die Pull Requests und die Workflows auf `main`
-der Repos in `scanRepos`, die nur pullen. Die Gruppen `cars-admins` und `cars-operators` dürfen Secrets
-in den Key Vault schreiben, etwa den privaten Schlüssel einer GitHub App:
+der Repos in `scanRepos`, die nur pullen. GitHub signiert die Subjects
+von `cars-world` mit unveränderlichen IDs, etwa
+`repo:cars-world@358216462/cars-origin-master@1453837020:ref:refs/heads/main`,
+daher nennt `github.bicepparam` jedes Repo mit seiner ID; ein unter
+demselben Namen neu angelegtes Repo kann sich nicht anmelden. Die Gruppen
+`cars-admins` und `cars-operators` dürfen Secrets in den Key Vault
+schreiben, etwa den privaten Schlüssel einer GitHub App:
 
 ```bash
 az keyvault secret set --vault-name kv-cars-github \

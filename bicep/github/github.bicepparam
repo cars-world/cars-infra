@@ -6,15 +6,18 @@
 
 using 'main.bicep'
 
+// GitHub signs the subjects of cars-world with the IDs of the organization
+// and the repos: gh api orgs/cars-world -q .id, gh api repos/cars-world/<repo> -q .id
 param organization = 'cars-world'
+param organizationId = 358216462
 param buildRepos = [
-  'cars-origin-master'
-  'cars-origin-client'
-  'cars-custom-master'
-  'cars-custom-client'
+  { name: 'cars-origin-master', id: 1453837020 }
+  { name: 'cars-origin-client', id: 1453837951 }
+  { name: 'cars-custom-master', id: 1453841660 }
+  { name: 'cars-custom-client', id: 1453842420 }
 ]
 param scanRepos = [
-  'cars-deployment'
+  { name: 'cars-deployment', id: 1445883097 }
 ]
 param registryName = 'crcars'
 param keyVaultName = 'kv-cars-github'

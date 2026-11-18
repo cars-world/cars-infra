@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- The federated credentials of the component `github` name the
+  organization and the repos with their IDs, as GitHub signs the
+  subjects of `cars-world`
 - `id-cars-github-scan` also signs in from the workflows on `main` of
   the repos in `scanRepos`
 - Add the component `github`: identities for GitHub Actions with

@@ -23,10 +23,13 @@ param techResponsibility string
 @description('GitHub organization of the repos')
 param organization string = 'cars-world'
 
-@description('Repos whose workflows on main build and push images')
+@description('ID of the GitHub organization; GitHub puts it into the subject')
+param organizationId int
+
+@description('Repos whose workflows on main build and push images, as { name, id }')
 param buildRepos array
 
-@description('Repos whose pull requests and workflows on main may pull images')
+@description('Repos whose pull requests and workflows on main may pull images, as { name, id }')
 param scanRepos array
 
 @description('Name of the container registry')
@@ -37,6 +40,11 @@ param keyVaultName string = 'kv-cars-github'
 
 @description('Object IDs of the Entra groups that may write secrets; set by deploy.js')
 param adminGroupIds array = []
+
+
+// The subject GitHub presents with immutable IDs, e.g.
+// repo:cars-world@358216462/cars-deployment@1445883097:ref:refs/heads/main
+func subjectPrefix(org string, orgId int, repo object) string => 'repo:${org}@${orgId}/${repo.name}@${repo.id}'
 
 var tags = {
   application: 'cars'
@@ -68,10 +76,10 @@ resource build 'Microsoft.ManagedIdentity/userAssignedIdentities@2024-11-30' = {
 resource buildCredentials 'Microsoft.ManagedIdentity/userAssignedIdentities/federatedIdentityCredentials@2024-11-30' = [
   for repo in buildRepos: {
     parent: build
-    name: '${repo}-main'
+    name: '${repo.name}-main'
     properties: {
       issuer: issuer
-      subject: 'repo:${organization}/${repo}:ref:refs/heads/main'
+      subject: '${subjectPrefix(organization, organizationId, repo)}:ref:refs/heads/main'
       audiences: [audience]
     }
   }
@@ -87,10 +95,10 @@ resource scan 'Microsoft.ManagedIdentity/userAssignedIdentities@2024-11-30' = {
 resource scanCredentials 'Microsoft.ManagedIdentity/userAssignedIdentities/federatedIdentityCredentials@2024-11-30' = [
   for repo in scanRepos: {
     parent: scan
-    name: '${repo}-pull-request'
+    name: '${repo.name}-pull-request'
     properties: {
       issuer: issuer
-      subject: 'repo:${organization}/${repo}:pull_request'
+      subject: '${subjectPrefix(organization, organizationId, repo)}:pull_request'
       audiences: [audience]
     }
   }
@@ -102,10 +110,10 @@ resource scanCredentials 'Microsoft.ManagedIdentity/userAssignedIdentities/feder
 resource scanMainCredentials 'Microsoft.ManagedIdentity/userAssignedIdentities/federatedIdentityCredentials@2024-11-30' = [
   for repo in scanRepos: {
     parent: scan
-    name: '${repo}-main'
+    name: '${repo.name}-main'
     properties: {
       issuer: issuer
-      subject: 'repo:${organization}/${repo}:ref:refs/heads/main'
+      subject: '${subjectPrefix(organization, organizationId, repo)}:ref:refs/heads/main'
       audiences: [audience]
     }
     dependsOn: [scanCredentials]
