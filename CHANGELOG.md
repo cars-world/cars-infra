@@ -7,6 +7,8 @@
   and read access to the Key Vault `kv-cars-github`, and
   `id-cars-github-scan` with AcrPull; `bootstrap.js` registers
   `Microsoft.KeyVault`
+- Move the repository to the GitHub organization `cars-world`; the
+  package is `@cars-world/cars-infra`
 - The pool `system` of `aks` gets two nodes: the managed Istio of the
   application routing add-on requests 1 vCPU on its own
 - Name the stages `dev`, `test` and `prod` in the README

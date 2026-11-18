@@ -20,7 +20,7 @@ component per resource, among them the Kubernetes cluster.
   from this repo alone
 - Each deploy shows a what-if first and applies only after a yes
 - What runs on these resources lives in
-  [cars-deployment](https://github.com/rljson/cars-deployment), so a
+  [cars-deployment](https://github.com/cars-world/cars-deployment), so a
   change to an image never touches the Azure resources
 
 ## Layout
