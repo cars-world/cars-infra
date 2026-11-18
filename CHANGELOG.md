@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- `id-cars-github-scan` also signs in from the workflows on `main` of
+  the repos in `scanRepos`
+- Add the component `github`: identities for GitHub Actions with
+  federated credentials for the repos of the organization `cars-world`, `id-cars-github-build` with AcrPush on `crcars`
+  and read access to the Key Vault `kv-cars-github`, and
+  `id-cars-github-scan` with AcrPull; `bootstrap.js` registers
+  `Microsoft.KeyVault`
 - Move the repository to the GitHub organization `cars-world`; the
   package is `@cars-world/cars-infra`
 - The pool `system` of `aks` gets two nodes: the managed Istio of the

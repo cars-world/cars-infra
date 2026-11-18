@@ -62,11 +62,13 @@ await run(async () => {
       `techResponsibility=${user}`,
     ];
 
-    // Components that grant cluster rights get the group object IDs
+    // Components that grant the admin groups rights get their object IDs
     const bicep = readFileSync(join('bicep', component, 'main.bicep'), 'utf8');
-    if (declaresParam(bicep, 'clusterAdminGroupIds')) {
-      const ids = JSON.stringify(groupIds(CLUSTER_ADMIN_GROUPS));
-      args.push('--parameters', `clusterAdminGroupIds=${ids}`);
+    for (const param of ['clusterAdminGroupIds', 'adminGroupIds']) {
+      if (declaresParam(bicep, param)) {
+        const ids = JSON.stringify(groupIds(CLUSTER_ADMIN_GROUPS));
+        args.push('--parameters', `${param}=${ids}`);
+      }
     }
 
     console.log(`\n🔎 What-if of ${component}`);
