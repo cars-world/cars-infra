@@ -3,7 +3,7 @@
 ## Unreleased
 
 - Add the component `github`: identities for GitHub Actions with
-  federated credentials, `id-cars-github-build` with AcrPush on `crcars`
+  federated credentials for the repos of the organization `cars-world`, `id-cars-github-build` with AcrPush on `crcars`
   and read access to the Key Vault `kv-cars-github`, and
   `id-cars-github-scan` with AcrPull; `bootstrap.js` registers
   `Microsoft.KeyVault`

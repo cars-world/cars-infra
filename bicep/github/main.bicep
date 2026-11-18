@@ -21,7 +21,7 @@ param location string = resourceGroup().location
 param techResponsibility string
 
 @description('GitHub organization of the repos')
-param organization string = 'rljson'
+param organization string = 'cars-world'
 
 @description('Repos whose workflows on main build and push images')
 param buildRepos array

@@ -6,7 +6,7 @@
 
 using 'main.bicep'
 
-param organization = 'rljson'
+param organization = 'cars-world'
 param buildRepos = [
   'cars-origin-master'
   'cars-origin-client'
