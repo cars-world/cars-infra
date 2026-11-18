@@ -21,7 +21,7 @@ Bicep-Komponente je Ressource, darunter der Kubernetes-Cluster.
 - Jedes Deployment zeigt zuerst ein What-if und wird erst nach einem Ja
   angewendet
 - Was auf diesen Ressourcen läuft, liegt in
-  [cars-deployment](https://github.com/rljson/cars-deployment); so berührt
+  [cars-deployment](https://github.com/cars-world/cars-deployment); so berührt
   eine Änderung an einem Image nie die Azure-Ressourcen
 
 ## Aufbau
