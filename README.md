@@ -125,8 +125,13 @@ OpenID Connect, without a stored secret: `id-cars-github-build` for the
 workflows on `main` of the repos in `buildRepos`, which push images to
 `crcars` and read the Key Vault `kv-cars-github`, and
 `id-cars-github-scan` for the pull requests and the workflows on `main`
-of the repos in `scanRepos`, which only pull. The groups `cars-admins` and `cars-operators` may write
-secrets into the Key Vault, e.g. the private key of a GitHub App:
+of the repos in `scanRepos`, which only pull. GitHub signs the subjects
+of `cars-world` with immutable IDs, e.g.
+`repo:cars-world@358216462/cars-origin-master@1453837020:ref:refs/heads/main`,
+so `github.bicepparam` names each repo with its ID; a repo created again
+under the same name cannot sign in. The groups `cars-admins` and
+`cars-operators` may write secrets into the Key Vault, e.g. the private
+key of a GitHub App:
 
 ```bash
 az keyvault secret set --vault-name kv-cars-github \
