@@ -125,8 +125,8 @@ Die Komponente `github` lässt GitHub Actions sich über OpenID Connect bei
 Azure anmelden, ohne gespeichertes Secret: `id-cars-github-build` für die
 Workflows auf `main` der Repos in `buildRepos`, die Images nach `crcars`
 pushen und den Key Vault `kv-cars-github` lesen, und
-`id-cars-github-scan` für die Pull Requests der Repos in `scanRepos`, die
-nur pullen. Die Gruppen `cars-admins` und `cars-operators` dürfen Secrets
+`id-cars-github-scan` für die Pull Requests und die Workflows auf `main`
+der Repos in `scanRepos`, die nur pullen. Die Gruppen `cars-admins` und `cars-operators` dürfen Secrets
 in den Key Vault schreiben, etwa den privaten Schlüssel einer GitHub App:
 
 ```bash

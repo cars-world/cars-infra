@@ -124,8 +124,8 @@ The component `github` lets GitHub Actions sign in to Azure through
 OpenID Connect, without a stored secret: `id-cars-github-build` for the
 workflows on `main` of the repos in `buildRepos`, which push images to
 `crcars` and read the Key Vault `kv-cars-github`, and
-`id-cars-github-scan` for the pull requests of the repos in `scanRepos`,
-which only pull. The groups `cars-admins` and `cars-operators` may write
+`id-cars-github-scan` for the pull requests and the workflows on `main`
+of the repos in `scanRepos`, which only pull. The groups `cars-admins` and `cars-operators` may write
 secrets into the Key Vault, e.g. the private key of a GitHub App:
 
 ```bash

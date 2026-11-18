@@ -8,8 +8,8 @@
 // in through OpenID Connect with a federated credential:
 // - id-cars-github-build: the build of an image on main of the given repos;
 //   pushes to the registry and reads the secrets of the Key Vault
-// - id-cars-github-scan: the pull requests of the given repo; only pulls
-//   from the registry, e.g. to scan images
+// - id-cars-github-scan: the pull requests and the workflows on main of the
+//   given repos; only pulls from the registry, e.g. to scan images
 // The Key Vault keeps secrets that workflows need beyond Azure, e.g. the
 // private key of a GitHub App; the admin groups may write them. Needs the
 // component container-registry deployed first.
@@ -26,7 +26,7 @@ param organization string = 'cars-world'
 @description('Repos whose workflows on main build and push images')
 param buildRepos array
 
-@description('Repos whose pull requests may pull images')
+@description('Repos whose pull requests and workflows on main may pull images')
 param scanRepos array
 
 @description('Name of the container registry')
@@ -93,6 +93,22 @@ resource scanCredentials 'Microsoft.ManagedIdentity/userAssignedIdentities/feder
       subject: 'repo:${organization}/${repo}:pull_request'
       audiences: [audience]
     }
+  }
+]
+
+// The workflows on main of the same repos scan before they open a pull
+// request; after the pull-request credentials, since writes are serial
+@batchSize(1)
+resource scanMainCredentials 'Microsoft.ManagedIdentity/userAssignedIdentities/federatedIdentityCredentials@2024-11-30' = [
+  for repo in scanRepos: {
+    parent: scan
+    name: '${repo}-main'
+    properties: {
+      issuer: issuer
+      subject: 'repo:${organization}/${repo}:ref:refs/heads/main'
+      audiences: [audience]
+    }
+    dependsOn: [scanCredentials]
   }
 ]
 
