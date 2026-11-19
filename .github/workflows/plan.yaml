@@ -1,0 +1,108 @@
+# @license
+# Copyright (c) rljson
+#
+# Use of this source code is governed by terms that can be
+# found in the LICENSE file in the root of this package.
+
+# Shows on every pull request into main what its components would change
+# in Azure: a what-if per changed component, posted as a comment. Reports
+# the check what-if, which the ruleset of main requires. Signs in as
+# id-cars-github-infra-plan, which may read and simulate, but change
+# nothing.
+
+name: Plan
+
+on:
+  pull_request:
+    branches: ['main']
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
+jobs:
+  what-if:
+    # The name is the check the ruleset requires
+    name: what-if
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the pull request
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22.x
+
+      - name: Find the changed components
+        id: changed
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          components=$(git diff --name-only "$BASE" HEAD | node changed.js | tr '\n' ' ')
+          echo "components=${components}" >> "$GITHUB_OUTPUT"
+          manual=$(git diff --name-only "$BASE" HEAD | grep -oE '^bicep/(github|github-infra)/' | sort -u | tr '\n' ' ' || true)
+          echo "manual=${manual}" >> "$GITHUB_OUTPUT"
+
+      - name: Sign in to Azure to read
+        if: steps.changed.outputs.components != ''
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID_INFRA_PLAN }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: What-if of the changed components
+        if: steps.changed.outputs.components != ''
+        env:
+          COMPONENTS: ${{ steps.changed.outputs.components }}
+          CARS_TECH_RESPONSIBILITY: ${{ github.actor }}
+        run: |
+          status=0
+          for component in $COMPONENTS; do
+            echo "### ${component}" >> "$RUNNER_TEMP/plan.md"
+            echo '```' >> "$RUNNER_TEMP/plan.md"
+            if node deploy.js "$component" --what-if > "$RUNNER_TEMP/out.txt" 2>&1; then
+              grep -E '^ *[-+~!x=*] |Resource changes|^ *~ |properties\.' "$RUNNER_TEMP/out.txt" \
+                | grep -v '^  [-+~!x=*] [A-Z][a-z]*$' >> "$RUNNER_TEMP/plan.md" || true
+            else
+              status=1
+              tail -20 "$RUNNER_TEMP/out.txt" >> "$RUNNER_TEMP/plan.md"
+            fi
+            echo '```' >> "$RUNNER_TEMP/plan.md"
+            cat "$RUNNER_TEMP/out.txt"
+          done
+          exit $status
+
+      - name: Post the what-if
+        if: always() && (steps.changed.outputs.components != '' || steps.changed.outputs.manual != '')
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          COMPONENTS: ${{ steps.changed.outputs.components }}
+          MANUAL: ${{ steps.changed.outputs.manual }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          {
+            echo "## What-if"
+            echo
+            if [ -n "$COMPONENTS" ]; then
+              echo "After the merge and your approval in the environment \`azure\`,"
+              echo "the workflow deploy applies: \`${COMPONENTS}\`"
+              echo
+              cat "$RUNNER_TEMP/plan.md" 2>/dev/null || echo "The what-if did not run."
+            fi
+            if [ -n "$MANUAL" ]; then
+              echo
+              echo "Deployed by hand only, not by the workflow: \`${MANUAL}\`"
+            fi
+            echo
+            echo "[Run](${RUN_URL})"
+          } > "$RUNNER_TEMP/comment.md"
+          head -c 60000 "$RUNNER_TEMP/comment.md" > "$RUNNER_TEMP/body.md"
+          gh pr comment "$PR" --body-file "$RUNNER_TEMP/body.md"
+          cat "$RUNNER_TEMP/body.md" >> "$GITHUB_STEP_SUMMARY"

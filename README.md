@@ -29,6 +29,8 @@ component per resource, among them the Kubernetes cluster.
 | ------------------------ | ------------------------------------------------------------------------ |
 | `bootstrap/bootstrap.js` | Run once: registers the resource providers, creates the group `rg-cars`  |
 | `deploy.js`              | Deploys one component or all of them into `rg-cars`                      |
+| `changed.js`             | Lists the components a change touches, for the workflows                 |
+| `.github/workflows`      | `plan`: what-if on pull requests; `deploy`: deploy after the approval    |
 | `test.js`                | Runs the unit tests of `lib` and builds every Bicep and parameter file   |
 | `lib`                    | Settings and checks shared by the scripts, with their tests              |
 | `bicep`                  | One folder per component: `main.bicep` and `<component>.bicepparam`      |
@@ -138,6 +140,38 @@ az keyvault secret set --vault-name kv-cars-github \
   --name <secret> --file <path-to-key>
 ```
 
+## Deploy from git
+
+A pull request into `main` that changes `bicep/<component>/` gets the
+check `what-if` from the workflow `plan`: it signs in as
+`id-cars-github-infra-plan`, which may read and simulate but change
+nothing, and posts the what-if of each changed component as a comment.
+`main` takes changes through pull requests only, each reviewed by the
+code owner. After the merge the workflow `deploy` waits in the GitHub
+environment `azure` until a required reviewer approves it, then signs in
+as `id-cars-github-infra` and runs `node deploy.js <component> --yes` for
+the changed components. **Actions → Deploy → Run workflow** deploys one
+component again.
+
+`id-cars-github-infra` is Contributor on `rg-cars` and may assign only the
+roles the components use. `github` and `github-infra` grant the rights of
+the workflows themselves and are deployed by hand only. The object IDs of
+the groups `cars-admins` and `cars-operators` lie in the parameter files,
+so no workflow reads Entra ID; on a laptop `deploy.js` asks Entra ID only
+when a file leaves them empty.
+
+Set up once, by hand:
+
+```bash
+node deploy.js github-infra
+gh api -X POST repos/cars-world/cars-infra/rulesets --input .github/rulesets/main.json
+```
+
+Then the repository variables `AZURE_CLIENT_ID_INFRA_PLAN` and
+`AZURE_CLIENT_ID_INFRA` (the client IDs of the two identities),
+`AZURE_TENANT_ID` and `AZURE_SUBSCRIPTION_ID`, and the environment `azure`
+with its required reviewer.
+
 ## Test
 
 Before each commit:
@@ -148,8 +182,7 @@ node test.js
 
 ## Limitations
 
-- No CI yet: operators deploy by hand from their machine; the GitHub
-  Actions workflows will call the same scripts
+- `bootstrap.js`, `github` and `github-infra` run by hand from a machine
 - No databases, storage or workload identities of the apps yet
 - The cluster stops every evening at 20:00 and runs only after a manual
   `az aks start`, so the apps of every stage, prod included, are offline
@@ -167,4 +200,5 @@ node test.js
 | `network`            | `vnet-cars`, `snet-cars-<pool>`, `nsg-cars-<pool>`                | yes      |
 | `aks`                | `aks-cars`, `id-aks-cars`, node resource group `rg-cars-aks`      | yes      |
 | `aks-schedule`       | `logic-aks-cars-stop`                                             | yes      |
-| `github`             | `id-cars-github-build`, `id-cars-github-scan`, `kv-cars-github`   | no       |
+| `github`             | `id-cars-github-build`, `id-cars-github-scan`, `kv-cars-github`   | yes      |
+| `github-infra`       | `id-cars-github-infra-plan`, `id-cars-github-infra`, a what-if role | yes    |

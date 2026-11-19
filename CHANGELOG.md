@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- Deploy from git: the workflow `plan` posts the what-if of the changed
+  components on a pull request and reports the check `what-if`; the
+  workflow `deploy` applies them after the approval in the environment
+  `azure`
+- Add the component `github-infra`: `id-cars-github-infra-plan` reads and
+  runs what-ifs, `id-cars-github-infra` deploys and may assign only the
+  roles the components use
+- `deploy.js` takes the group IDs from the parameter files and the person
+  from `CARS_TECH_RESPONSIBILITY`; `changed.js` lists changed components
+- Ruleset of `main` and `CODEOWNERS`: pull requests with the check
+  `what-if` and the review of the code owner
 - The federated credentials of the component `github` name the
   organization and the repos with their IDs, as GitHub signs the
   subjects of `cars-world`

@@ -24,3 +24,9 @@ param keyVaultName = 'kv-cars-github'
 
 // deploy.js overrides this with the signed-in user
 param techResponsibility = ''
+
+// The object IDs of the groups cars-admins and cars-operators; not secret
+param adminGroupIds = [
+  '108821f8-6d6a-4f12-977e-4b434ea31aa9' // cars-admins
+  'e77360b5-2ca0-479d-8d79-4eabfe5e308c' // cars-operators
+]

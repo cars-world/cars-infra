@@ -11,6 +11,7 @@
 //   node test.js
 
 import { spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { chdir } from 'node:process';
 import { fileURLToPath } from 'node:url';
@@ -52,6 +53,21 @@ if (!files.length) {
   console.log('❌ No Bicep files found');
   process.exit(1);
 }
+// The workflows and the ruleset of main must agree on the check what-if
+const ruleset = JSON.parse(readFileSync('.github/rulesets/main.json', 'utf8'));
+const rule = (type) => ruleset.rules.find((r) => r.type === type)?.parameters;
+const guarded =
+  rule('required_status_checks')?.required_status_checks.some((c) => c.context === 'what-if') &&
+  rule('pull_request')?.require_code_owner_review === true &&
+  /^ {4}name: what-if$/m.test(readFileSync('.github/workflows/plan.yaml', 'utf8')) &&
+  /^\* +@\S+/m.test(readFileSync('.github/CODEOWNERS', 'utf8'));
+if (guarded) {
+  console.log('✅ main requires the check what-if and the review of the code owner');
+} else {
+  console.log('❌ The ruleset, plan.yaml or CODEOWNERS no longer guard main');
+  failed++;
+}
+
 if (failed) {
   console.log(`❌ ${failed} checks failed`);
   process.exit(1);
