@@ -1,0 +1,99 @@
+# @license
+# Copyright (c) rljson
+#
+# Use of this source code is governed by terms that can be
+# found in the LICENSE file in the root of this package.
+
+# Deploys the components a push to main changed, after the approval in the
+# GitHub environment azure. Signs in as id-cars-github-infra, which may
+# change rg-cars but assign only the roles the components use. github and
+# github-infra are deployed by hand only. Run workflow deploys one
+# component of main again.
+
+name: Deploy
+
+on:
+  push:
+    branches: ['main']
+  workflow_dispatch:
+    inputs:
+      component:
+        description: The component to deploy again
+        required: true
+        type: choice
+        options: [log-analytics, container-registry, network, aks, aks-schedule]
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  changed:
+    name: Find the changed components
+    runs-on: ubuntu-latest
+    outputs:
+      components: ${{ steps.changed.outputs.components }}
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22.x
+
+      - name: Find the changed components
+        id: changed
+        env:
+          BEFORE: ${{ github.event.before }}
+          COMPONENT: ${{ inputs.component }}
+        run: |
+          if [ -n "$COMPONENT" ]; then
+            components=$(echo "bicep/${COMPONENT}/" | node changed.js | tr '\n' ' ')
+          else
+            components=$(git diff --name-only "$BEFORE" HEAD | node changed.js | tr '\n' ' ')
+          fi
+          echo "components=${components}" >> "$GITHUB_OUTPUT"
+          echo "Components: ${components:-none}" >> "$GITHUB_STEP_SUMMARY"
+
+  deploy:
+    name: Deploy ${{ needs.changed.outputs.components }}
+    needs: changed
+    if: needs.changed.outputs.components != ''
+    runs-on: ubuntu-latest
+    # Waits for the approval of a required reviewer of the environment
+    environment: azure
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22.x
+
+      - name: Sign in to Azure to deploy
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID_INFRA }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy
+        env:
+          COMPONENTS: ${{ needs.changed.outputs.components }}
+          CARS_TECH_RESPONSIBILITY: ${{ github.actor }}
+        run: |
+          if [[ " $COMPONENTS " == *" aks "* ]] && \
+             [ "$(az aks show -g rg-cars -n aks-cars --query powerState.code -o tsv)" != "Running" ]; then
+            echo "::warning::aks-cars is stopped; the deploy of aks may fail. Start it with az aks start"
+          fi
+          for component in $COMPONENTS; do
+            node deploy.js "$component" --yes
+          done

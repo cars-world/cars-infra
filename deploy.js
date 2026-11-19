@@ -31,6 +31,7 @@ import {
   RESOURCE_GROUP,
   requireFile,
   requireSubscription,
+  setsParam,
   run,
   signedInUser,
 } from './lib/common.js';
@@ -50,7 +51,8 @@ await run(async () => {
     throw new Fail(`${RESOURCE_GROUP} is missing. Run: node bootstrap/bootstrap.js`);
   }
 
-  const user = signedInUser();
+  // In CI the workflow names the person; a laptop asks Entra ID
+  const user = process.env.CARS_TECH_RESPONSIBILITY || signedInUser();
 
   for (const component of components) {
     const args = [
@@ -62,17 +64,22 @@ await run(async () => {
       `techResponsibility=${user}`,
     ];
 
-    // Components that grant the admin groups rights get their object IDs
+    // Components that grant the admin groups rights get their object IDs,
+    // from the parameter file or else from Entra ID
     const bicep = readFileSync(join('bicep', component, 'main.bicep'), 'utf8');
+    const params = readFileSync(paramsFile(component), 'utf8');
     for (const param of ['clusterAdminGroupIds', 'adminGroupIds']) {
-      if (declaresParam(bicep, param)) {
+      if (declaresParam(bicep, param) && !setsParam(params, param)) {
         const ids = JSON.stringify(groupIds(CLUSTER_ADMIN_GROUPS));
         args.push('--parameters', `${param}=${ids}`);
       }
     }
 
     console.log(`\n🔎 What-if of ${component}`);
-    azShow(['deployment', 'group', 'what-if', ...args]);
+    // In CI the what-if runs with read rights only: it skips the check of
+    // the write rights, which the deploy itself still enforces
+    const validation = process.env.CI ? ['--validation-level', 'ProviderNoRbac'] : [];
+    azShow(['deployment', 'group', 'what-if', ...args, ...validation]);
     if (mode === 'what-if') continue;
 
     if (mode === 'ask' && !(await confirm(`Apply ${component}?`))) {

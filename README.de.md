@@ -30,6 +30,8 @@ Bicep-Komponente je Ressource, darunter der Kubernetes-Cluster.
 | ------------------------ | ------------------------------------------------------------------------------ |
 | `bootstrap/bootstrap.js` | Einmal: registriert die Ressourcenanbieter, legt die Gruppe `rg-cars` an       |
 | `deploy.js`              | Rollt eine Komponente oder alle in `rg-cars` aus                               |
+| `changed.js`             | Listet die Komponenten, die eine Änderung berührt, für die Workflows           |
+| `.github/workflows`      | `plan`: What-if auf Pull Requests; `deploy`: Ausrollen nach der Freigabe        |
 | `test.js`                | Führt die Unit-Tests von `lib` aus und baut jede Bicep- und Parameterdatei     |
 | `lib`                    | Einstellungen und Prüfungen, die die Skripte teilen, mit ihren Tests           |
 | `bicep`                  | Ein Ordner je Komponente: `main.bicep` und `<component>.bicepparam`            |
@@ -139,6 +141,39 @@ az keyvault secret set --vault-name kv-cars-github \
   --name <secret> --file <path-to-key>
 ```
 
+## Aus Git ausrollen
+
+Ein Pull Request in `main`, der `bicep/<component>/` ändert, bekommt den
+Check `what-if` vom Workflow `plan`: er meldet sich als
+`id-cars-github-infra-plan` an, die lesen und simulieren, aber nichts
+ändern darf, und postet das What-if jeder geänderten Komponente als
+Kommentar. `main` nimmt Änderungen nur über Pull Requests an, jeder vom
+Code Owner geprüft. Nach dem Merge wartet der Workflow `deploy` im
+GitHub-Environment `azure`, bis ein nötiger Reviewer ihn freigibt, meldet
+sich dann als `id-cars-github-infra` an und führt
+`node deploy.js <component> --yes` für die geänderten Komponenten aus.
+**Actions → Deploy → Run workflow** rollt eine Komponente erneut aus.
+
+`id-cars-github-infra` ist Contributor auf `rg-cars` und darf nur die
+Rollen vergeben, die die Komponenten nutzen. `github` und `github-infra`
+geben den Workflows selbst ihre Rechte und werden nur von Hand
+ausgerollt. Die Objekt-IDs der Gruppen `cars-admins` und `cars-operators`
+stehen in den Parameterdateien, daher liest kein Workflow Entra ID; auf
+einem Laptop fragt `deploy.js` Entra ID nur, wenn eine Datei sie leer
+lässt.
+
+Einmal von Hand einrichten:
+
+```bash
+node deploy.js github-infra
+gh api -X POST repos/cars-world/cars-infra/rulesets --input .github/rulesets/main.json
+```
+
+Dann die Repository-Variablen `AZURE_CLIENT_ID_INFRA_PLAN` und
+`AZURE_CLIENT_ID_INFRA` (die Client-IDs der beiden Identitäten),
+`AZURE_TENANT_ID` und `AZURE_SUBSCRIPTION_ID`, und das Environment
+`azure` mit seinem nötigen Reviewer.
+
 ## Test
 
 Vor jedem Commit:
@@ -149,8 +184,8 @@ node test.js
 
 ## Grenzen
 
-- Noch keine CI: Betreiber rollen von Hand von ihrem Rechner aus; die
-  GitHub-Actions-Workflows werden dieselben Skripte aufrufen
+- `bootstrap.js`, `github` und `github-infra` laufen von Hand von einem
+  Rechner
 - Noch keine Datenbanken, kein Speicher und keine Workload-Identitäten der
   Apps
 - Der Cluster stoppt jeden Abend um 20:00 und läuft erst nach einem
@@ -170,4 +205,5 @@ node test.js
 | `network`            | `vnet-cars`, `snet-cars-<pool>`, `nsg-cars-<pool>`                | ja         |
 | `aks`                | `aks-cars`, `id-aks-cars`, Knoten-Ressourcengruppe `rg-cars-aks`  | ja         |
 | `aks-schedule`       | `logic-aks-cars-stop`                                             | ja         |
-| `github`             | `id-cars-github-build`, `id-cars-github-scan`, `kv-cars-github`   | nein       |
+| `github`             | `id-cars-github-build`, `id-cars-github-scan`, `kv-cars-github`   | ja         |
+| `github-infra`       | `id-cars-github-infra-plan`, `id-cars-github-infra`, eine What-if-Rolle | ja   |
