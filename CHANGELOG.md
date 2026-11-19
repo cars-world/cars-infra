@@ -5,7 +5,8 @@
 - Deploy from git: the workflow `plan` posts the what-if of the changed
   components on a pull request and reports the check `what-if`; the
   workflow `deploy` applies them after the approval in the environment
-  `azure`
+  `azure`; in CI the what-if runs with `--validation-level ProviderNoRbac`,
+  so it needs read rights only
 - Add the component `github-infra`: `id-cars-github-infra-plan` reads and
   runs what-ifs, `id-cars-github-infra` deploys and may assign only the
   roles the components use

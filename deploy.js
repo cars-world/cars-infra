@@ -76,7 +76,10 @@ await run(async () => {
     }
 
     console.log(`\n🔎 What-if of ${component}`);
-    azShow(['deployment', 'group', 'what-if', ...args]);
+    // In CI the what-if runs with read rights only: it skips the check of
+    // the write rights, which the deploy itself still enforces
+    const validation = process.env.CI ? ['--validation-level', 'ProviderNoRbac'] : [];
+    azShow(['deployment', 'group', 'what-if', ...args, ...validation]);
     if (mode === 'what-if') continue;
 
     if (mode === 'ask' && !(await confirm(`Apply ${component}?`))) {
