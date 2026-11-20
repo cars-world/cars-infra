@@ -197,8 +197,11 @@ node test.js
 | -------------------- | ----------------------------------------------------------------- | -------- |
 | `log-analytics`      | `log-cars`                                                        | yes      |
 | `container-registry` | `crcars`                                                          | yes      |
-| `network`            | `vnet-cars`, `snet-cars-<pool>`, `nsg-cars-<pool>`                | yes      |
+| `network`            | `vnet-cars`, `snet-cars-<pool>`, `nsg-cars-<pool>`; `snet-cars-endpoints`, `nsg-cars-endpoints` and the private DNS zones of SQL and blob | yes; the endpoints with the next merge |
 | `aks`                | `aks-cars`, `id-aks-cars`, node resource group `rg-cars-aks`      | yes      |
 | `aks-schedule`       | `logic-aks-cars-stop`                                             | yes      |
+| `data-identities`    | `id-cars-<side>-master-<stage>`, `id-cars-sql-admin`              | with the next merge |
+| `sql`                | `sql-cars-<side>`, `sqldb-cars-<side>-<stage>`, `pe-sql-cars-<side>` | with the next merge |
+| `storage`            | `stcars<side>`, containers `<stage>`, `pe-st-cars-<side>`        | with the next merge |
 | `github`             | `id-cars-github-build`, `id-cars-github-scan`, `kv-cars-github`   | yes      |
 | `github-infra`       | `id-cars-github-infra-plan`, `id-cars-github-infra`, a what-if role | yes    |
