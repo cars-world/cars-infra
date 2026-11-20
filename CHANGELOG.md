@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Add the data of the masters: the component `network` gets the subnet
+  `snet-cars-endpoints` and the private DNS zones of SQL and blob; the new
+  components `data-identities` (an identity per master and stage,
+  `id-cars-sql-admin`), `sql` (a server per side, a Basic database per
+  stage, Entra only) and `storage` (an account per side, a container per
+  stage, no shared keys), both behind private endpoints
+- `github-infra`: the deploy may assign *Storage Blob Data Contributor*
 - Deploy from git: the workflow `plan` posts the what-if of the changed
   components on a pull request and reports the check `what-if`; the
   workflow `deploy` applies them after the approval in the environment

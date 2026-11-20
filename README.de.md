@@ -202,8 +202,11 @@ node test.js
 | -------------------- | ----------------------------------------------------------------- | ---------- |
 | `log-analytics`      | `log-cars`                                                        | ja         |
 | `container-registry` | `crcars`                                                          | ja         |
-| `network`            | `vnet-cars`, `snet-cars-<pool>`, `nsg-cars-<pool>`                | ja         |
+| `network`            | `vnet-cars`, `snet-cars-<pool>`, `nsg-cars-<pool>`; `snet-cars-endpoints`, `nsg-cars-endpoints` und die privaten DNS-Zonen von SQL und Blob | ja; die Endpunkte mit dem nächsten Merge |
 | `aks`                | `aks-cars`, `id-aks-cars`, Knoten-Ressourcengruppe `rg-cars-aks`  | ja         |
 | `aks-schedule`       | `logic-aks-cars-stop`                                             | ja         |
+| `data-identities`    | `id-cars-<side>-master-<stage>`, `id-cars-sql-admin`              | mit dem nächsten Merge |
+| `sql`                | `sql-cars-<side>`, `sqldb-cars-<side>-<stage>`, `pe-sql-cars-<side>` | mit dem nächsten Merge |
+| `storage`            | `stcars<side>`, Container `<stage>`, `pe-st-cars-<side>`         | mit dem nächsten Merge |
 | `github`             | `id-cars-github-build`, `id-cars-github-scan`, `kv-cars-github`   | ja         |
 | `github-infra`       | `id-cars-github-infra-plan`, `id-cars-github-infra`, eine What-if-Rolle | ja   |
