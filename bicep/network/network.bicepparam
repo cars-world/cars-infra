@@ -12,6 +12,7 @@ param subnetPrefixes = {
   origin: '10.10.1.0/24'
   custom: '10.10.2.0/24'
 }
+param endpointsPrefix = '10.10.3.0/24'
 
 // deploy.js overrides this with the signed-in user
 param techResponsibility = ''

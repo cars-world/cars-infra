@@ -22,6 +22,7 @@ param assignableRoleIds = [
   '4d97b98b-1d4f-4787-a291-c67834d212e7' // Network Contributor
   '4633458b-17de-408a-b874-0445c86b69e6' // Key Vault Secrets User
   'b86a8fe4-44ce-4948-aee5-eccb2c155cd7' // Key Vault Secrets Officer
+  'ba92f5b4-2d11-453d-a403-e96b0029c9fe' // Storage Blob Data Contributor
 ]
 
 // deploy.js overrides this with the signed-in user
